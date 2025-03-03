@@ -19,6 +19,11 @@ resource "google_cloud_run_v2_service" "nginx" {
         name = "bucket1"
         mount_path = "/var/www/html"
       }
+      volume_mounts {
+        name = "bucket2"
+        mount_path = "/var/www/html2"
+      }
+
       startup_probe {
         initial_delay_seconds = 5
         timeout_seconds = 2
@@ -45,9 +50,17 @@ resource "google_cloud_run_v2_service" "nginx" {
       name = "bucket1"
       gcs {
         bucket = google_storage_bucket.bucket1.name
-        read_only = false
+        read_only = true
       }
     }
+    volumes {
+      name = "bucket2"
+      gcs {
+        bucket = google_storage_bucket.bucket2.name
+        read_only = true
+      }
+    }
+
   }
 }
 
@@ -61,4 +74,9 @@ resource "google_storage_bucket_object" "default" {
  source       = "../static/index.html"
  content_type = "text/plain"
  bucket       = google_storage_bucket.bucket1.id
+}
+
+resource "google_storage_bucket" "bucket2" {
+  name          = "cloud-run-gcs-bucket2"
+  location      = "EU"
 }
